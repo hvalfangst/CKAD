@@ -1,0 +1,683 @@
+# CKAD Section 2: Application Deployment - Examples
+# Comprehensive examples for deployment strategies and scaling
+
+---
+# Basic Deployment with Rolling Update Strategy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app
+  labels:
+    app: web-app
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 20
+
+---
+# Deployment with Recreate Strategy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database-app
+  labels:
+    app: database-app
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: database-app
+  template:
+    metadata:
+      labels:
+        app: database-app
+    spec:
+      containers:
+      - name: database
+        image: postgres:13
+        env:
+        - name: POSTGRES_PASSWORD
+          value: "password"
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: data
+        emptyDir: {}
+
+---
+# CPU-based Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: web-app-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web-app
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Pods
+        value: 4
+        periodSeconds: 60
+
+---
+# Memory-based HPA
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: memory-intensive-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: memory-app
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# Multi-metric HPA
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: multi-metric-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-server
+  minReplicas: 2
+  maxReplicas: 15
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70
+
+---
+# Blue-Green Deployment - Blue (Current)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-blue
+  labels:
+    app: myapp
+    version: blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: blue
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.20
+        ports:
+        - containerPort: 80
+        env:
+        - name: VERSION
+          value: "blue"
+
+---
+# Blue-Green Deployment - Green (New)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-green
+  labels:
+    app: myapp
+    version: green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+      version: green
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: green
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+        env:
+        - name: VERSION
+          value: "green"
+
+---
+# Service for Blue-Green Deployment
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service
+spec:
+  selector:
+    app: myapp
+    version: blue  # Change to 'green' for cutover
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP
+
+---
+# Canary Deployment - Stable Version
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-stable
+  labels:
+    app: api
+    track: stable
+spec:
+  replicas: 9  # 90% of traffic
+  selector:
+    matchLabels:
+      app: api
+      track: stable
+  template:
+    metadata:
+      labels:
+        app: api
+        track: stable
+    spec:
+      containers:
+      - name: api
+        image: myapi:v1.0
+        ports:
+        - containerPort: 8080
+        env:
+        - name: VERSION
+          value: "stable"
+
+---
+# Canary Deployment - Canary Version
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-canary
+  labels:
+    app: api
+    track: canary
+spec:
+  replicas: 1  # 10% of traffic
+  selector:
+    matchLabels:
+      app: api
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: api
+        track: canary
+    spec:
+      containers:
+      - name: api
+        image: myapi:v2.0
+        ports:
+        - containerPort: 8080
+        env:
+        - name: VERSION
+          value: "canary"
+
+---
+# Service for Canary Deployment
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-service
+spec:
+  selector:
+    app: api  # Selects both stable and canary
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: ClusterIP
+
+---
+# Pod Disruption Budget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web-app-pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: web-app
+
+---
+# Pod Disruption Budget with maxUnavailable
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-pdb
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: api
+
+---
+# Deployment with Lifecycle Hooks
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lifecycle-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lifecycle-app
+  template:
+    metadata:
+      labels:
+        app: lifecycle-app
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "echo 'Container started at $(date)' >> /var/log/lifecycle.log"]
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "echo 'Container stopping at $(date)' >> /var/log/lifecycle.log; sleep 15"]
+        volumeMounts:
+        - name: logs
+          mountPath: /var/log
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: logs
+        emptyDir: {}
+
+---
+# A/B Testing Deployment - Variant A
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-variant-a
+  labels:
+    app: webapp
+    variant: a
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: webapp
+      variant: a
+  template:
+    metadata:
+      labels:
+        app: webapp
+        variant: a
+    spec:
+      containers:
+      - name: webapp
+        image: webapp:v1.0
+        ports:
+        - containerPort: 8080
+        env:
+        - name: FEATURE_FLAG
+          value: "false"
+        - name: VARIANT
+          value: "A"
+
+---
+# A/B Testing Deployment - Variant B
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-variant-b
+  labels:
+    app: webapp
+    variant: b
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: webapp
+      variant: b
+  template:
+    metadata:
+      labels:
+        app: webapp
+        variant: b
+    spec:
+      containers:
+      - name: webapp
+        image: webapp:v1.0
+        ports:
+        - containerPort: 8080
+        env:
+        - name: FEATURE_FLAG
+          value: "true"
+        - name: VARIANT
+          value: "B"
+
+---
+# Service for A/B Testing
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service
+spec:
+  selector:
+    app: webapp  # Selects both variants
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: ClusterIP
+
+---
+# Resource Quota for Namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: deployment-quota
+  namespace: production
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    pods: "20"
+    persistentvolumeclaims: "10"
+    services: "10"
+
+---
+# Limit Range for Namespace
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: deployment-limits
+  namespace: production
+spec:
+  limits:
+  - default:
+      cpu: "200m"
+      memory: "256Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"
+    max:
+      cpu: "1"
+      memory: "1Gi"
+    min:
+      cpu: "50m"
+      memory: "64Mi"
+    type: Container
+
+---
+# Deployment with Advanced Rolling Update
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: advanced-rolling-app
+spec:
+  replicas: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 3
+      maxSurge: 2
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 600
+  selector:
+    matchLabels:
+      app: advanced-rolling-app
+  template:
+    metadata:
+      labels:
+        app: advanced-rolling-app
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 3
+
+---
+# Deployment with Init Container
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-with-init
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app-with-init
+  template:
+    metadata:
+      labels:
+        app: app-with-init
+    spec:
+      initContainers:
+      - name: migration
+        image: migrate/migrate:latest
+        command: ['sh', '-c', 'echo "Running migrations..." && sleep 10']
+      containers:
+      - name: app
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+
+---
+# Deployment for Load Testing Target
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: load-test-target
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: load-test-target
+  template:
+    metadata:
+      labels:
+        app: load-test-target
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
+---
+# HPA for Load Testing
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: load-test-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: load-test-target
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 60
+
+---
+# Service for Load Testing
+apiVersion: v1
+kind: Service
+metadata:
+  name: load-test-service
+spec:
+  selector:
+    app: load-test-target
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP
+
+---
+# ConfigMap for Feature Flags
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feature-flags
+data:
+  new_feature: "true"
+  beta_features: "false"
+  experimental_ui: "true"
+  cache_enabled: "true"
+
+---
+# Deployment using Feature Flags
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feature-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: feature-app
+  template:
+    metadata:
+      labels:
+        app: feature-app
+    spec:
+      containers:
+      - name: app
+        image: myapp:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: NEW_FEATURE_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: feature-flags
+              key: new_feature
+        - name: BETA_FEATURES
+          valueFrom:
+            configMapKeyRef:
+              name: feature-flags
+              key: beta_features
+        - name: EXPERIMENTAL_UI
+          valueFrom:
+            configMapKeyRef:
+              name: feature-flags
+              key: experimental_ui

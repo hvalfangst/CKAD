@@ -1,0 +1,494 @@
+# CKAD Section 1: Application Design and Build - Examples
+# This file contains practical examples for hands-on practice
+
+---
+# Basic Pod Example
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx
+    tier: frontend
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.21
+    ports:
+    - containerPort: 80
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    env:
+    - name: ENV
+      value: "production"
+
+---
+# Pod with Volume Mount
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-volume
+spec:
+  containers:
+  - name: app
+    image: busybox:1.35
+    command: ['sh', '-c', 'echo "Hello World" > /data/hello.txt && sleep 3600']
+    volumeMounts:
+    - name: data-volume
+      mountPath: /data
+  volumes:
+  - name: data-volume
+    emptyDir: {}
+
+---
+# Deployment Example
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+# Deployment with Rolling Update Strategy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+
+---
+# ReplicaSet Example
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-replicaset
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+
+---
+# Job Example - Pi Calculation
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi-calculation
+spec:
+  template:
+    spec:
+      containers:
+      - name: pi
+        image: perl:5.34.0
+        command: ["perl", "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+      restartPolicy: Never
+  backoffLimit: 4
+
+---
+# Job with Parallelism
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: parallel-job
+spec:
+  parallelism: 3
+  completions: 6
+  template:
+    spec:
+      containers:
+      - name: worker
+        image: busybox:1.35
+        command: ["sh", "-c", "echo 'Processing item' && sleep 10"]
+      restartPolicy: Never
+
+---
+# CronJob Example - Daily Backup
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-job
+spec:
+  schedule: "0 2 * * *"  # Every day at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup
+            image: busybox:1.35
+            command: ["/bin/sh", "-c", "echo 'Running backup at $(date)' && sleep 30"]
+          restartPolicy: OnFailure
+
+---
+# CronJob Example - Cleanup Job
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup-job
+spec:
+  schedule: "0 0 * * 0"  # Every Sunday at midnight
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: cleanup
+            image: busybox:1.35
+            command: ["/bin/sh", "-c", "echo 'Cleaning up old files' && sleep 15"]
+          restartPolicy: OnFailure
+
+---
+# DaemonSet Example - Log Collector
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: log-collector
+  labels:
+    app: log-collector
+spec:
+  selector:
+    matchLabels:
+      app: log-collector
+  template:
+    metadata:
+      labels:
+        app: log-collector
+    spec:
+      containers:
+      - name: log-collector
+        image: fluent/fluent-bit:1.8
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+          readOnly: true
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+
+---
+# StatefulSet Example - Database
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  serviceName: postgres
+  replicas: 3
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: mydb
+        - name: POSTGRES_USER
+          value: admin
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+
+---
+# Multi-Container Pod - Sidecar Pattern
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-server-with-sidecar
+spec:
+  containers:
+  - name: web-server
+    image: nginx:1.21
+    ports:
+    - containerPort: 80
+    volumeMounts:
+    - name: shared-logs
+      mountPath: /var/log/nginx
+  - name: log-agent
+    image: busybox:1.35
+    command: ['sh', '-c', 'tail -f /var/log/nginx/access.log']
+    volumeMounts:
+    - name: shared-logs
+      mountPath: /var/log/nginx
+  volumes:
+  - name: shared-logs
+    emptyDir: {}
+
+---
+# Multi-Container Pod - Ambassador Pattern
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-with-ambassador
+spec:
+  containers:
+  - name: app
+    image: busybox:1.35
+    command: ['sh', '-c', 'while true; do wget -q --spider http://localhost:8080/health; sleep 30; done']
+  - name: ambassador
+    image: nginx:1.21
+    ports:
+    - containerPort: 8080
+    volumeMounts:
+    - name: config
+      mountPath: /etc/nginx/conf.d
+  volumes:
+  - name: config
+    configMap:
+      name: nginx-config
+
+---
+# Multi-Container Pod - Adapter Pattern
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-with-adapter
+spec:
+  containers:
+  - name: app
+    image: busybox:1.35
+    command: ['sh', '-c', 'while true; do echo "$(date): Application log" >> /var/log/app.log; sleep 10; done']
+    volumeMounts:
+    - name: log-volume
+      mountPath: /var/log
+  - name: log-adapter
+    image: busybox:1.35
+    command: ['sh', '-c', 'while true; do cat /var/log/app.log | grep "$(date +%Y-%m-%d)" > /var/log/today.log; sleep 60; done']
+    volumeMounts:
+    - name: log-volume
+      mountPath: /var/log
+  volumes:
+  - name: log-volume
+    emptyDir: {}
+
+---
+# Pod with Init Containers
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-with-init
+spec:
+  initContainers:
+  - name: init-setup
+    image: busybox:1.35
+    command: ['sh', '-c', 'echo "Initializing..." && mkdir -p /shared/data && echo "Setup complete" > /shared/data/init.txt']
+    volumeMounts:
+    - name: shared-data
+      mountPath: /shared
+  - name: init-download
+    image: busybox:1.35
+    command: ['sh', '-c', 'echo "Downloading dependencies..." && sleep 5 && echo "Dependencies downloaded" > /shared/data/deps.txt']
+    volumeMounts:
+    - name: shared-data
+      mountPath: /shared
+  containers:
+  - name: app
+    image: busybox:1.35
+    command: ['sh', '-c', 'echo "App starting..." && cat /shared/data/*.txt && sleep 3600']
+    volumeMounts:
+    - name: shared-data
+      mountPath: /shared
+  volumes:
+  - name: shared-data
+    emptyDir: {}
+
+---
+# Pod with Health Checks
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-with-health-checks
+spec:
+  containers:
+  - name: app
+    image: nginx:1.21
+    ports:
+    - containerPort: 80
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+    startupProbe:
+      httpGet:
+        path: /
+        port: 80
+      failureThreshold: 30
+      periodSeconds: 10
+
+---
+# Pod with ConfigMap and Secret
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-with-config
+spec:
+  containers:
+  - name: app
+    image: busybox:1.35
+    command: ['sh', '-c', 'echo "Config: $DATABASE_URL" && echo "Secret: $API_KEY" && sleep 3600']
+    env:
+    - name: DATABASE_URL
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: database_url
+    - name: API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: app-secret
+          key: api_key
+    - name: LOG_LEVEL
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: log_level
+
+---
+# ConfigMap for the above pod
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  database_url: "postgres://localhost:5432/mydb"
+  log_level: "info"
+  feature_flag: "true"
+
+---
+# Secret for the above pod
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secret
+type: Opaque
+data:
+  api_key: YWJjZGVmZ2hpams=  # base64 encoded "abcdefghijk"
+  password: cGFzc3dvcmQ=     # base64 encoded "password"
+
+---
+# Secret for PostgreSQL StatefulSet
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+type: Opaque
+data:
+  password: cG9zdGdyZXM=  # base64 encoded "postgres"

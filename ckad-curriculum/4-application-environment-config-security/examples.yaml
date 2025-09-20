@@ -1,0 +1,727 @@
+# CKAD Section 4: Application Environment, Configuration and Security - Examples
+# Comprehensive examples for configuration management and security
+
+---
+# ConfigMap with Multiple Data Types
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  labels:
+    app: myapp
+    version: v1.0.0
+data:
+  # Simple key-value pairs
+  database_url: "postgres://localhost:5432/mydb"
+  log_level: "info"
+  debug_mode: "false"
+  max_connections: "100"
+
+  # Properties file format
+  app.properties: |
+    app.name=MyApplication
+    app.version=1.0.0
+    app.environment=production
+    database.driver=org.postgresql.Driver
+    database.pool.size=10
+
+  # YAML configuration
+  config.yaml: |
+    server:
+      host: 0.0.0.0
+      port: 8080
+    logging:
+      level: info
+      format: json
+    features:
+      new_ui: true
+      beta_mode: false
+
+  # Nginx configuration
+  nginx.conf: |
+    worker_processes auto;
+    events {
+        worker_connections 1024;
+    }
+    http {
+        upstream backend {
+            server app1:8080;
+            server app2:8080;
+        }
+        server {
+            listen 80;
+            location / {
+                proxy_pass http://backend;
+            }
+        }
+    }
+
+---
+# Secret with Multiple Types
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secret
+type: Opaque
+data:
+  username: YWRtaW4=        # base64: admin
+  password: c2VjcmV0MTIz    # base64: secret123
+  api-key: YWJjZGVmZ2hpams= # base64: abcdefghijk
+stringData:
+  # Automatically base64 encoded
+  database-password: "super-secret-password"
+  jwt-secret: "my-jwt-signing-secret"
+  config.json: |
+    {
+      "database": {
+        "host": "db.example.com",
+        "port": 5432,
+        "ssl": true
+      },
+      "redis": {
+        "host": "redis.example.com",
+        "port": 6379
+      }
+    }
+
+---
+# TLS Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tls-secret
+type: kubernetes.io/tls
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURYVENDQWtXZ0F3SUJBZ0lKQUpzOUY3b0M5TEs4TUEwR0NTcUdTSWIzRFFFQkN3VUFNRVl4Q3pBSkJnTlYKQkFZVEFsVk5NUkV3RHdZRFZRUUlEQWhUVEVKU1FVZEpNQkl3RUFZRFZRUUtEQWxUVEVKU1FVZEpJRXBJVERFTgpNQXNHQTFVRUN3d0VVa3hKYnpFTU1Bb0dBMVVFQXd3RFEyOEJBUXdIaUVZVEFrVk9kZ2tnCk1JSkZNQ3NCVkl1bUIxVHRaWW1ZRFZ3ZU5LeUZlCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2QUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktZd2dnU2lBZ0VBQW9JQkFRRERWazB1aTJ3NEJWdkkKM0hKSW5pbVlEVndlTkt5RmU4NCtGNytvQ1FJREFRQUJBb0lCQUN3S0hKbkw1MEp6cjd0WTFvSGVaNTBjNjJscAo3L3NvakErTStXQTN0VFJ1TCtUeWVBZmZYeWJ0SzRhdWZZdnZaRlEKLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLQo=
+
+---
+# Docker Registry Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: registry-secret
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyJyZWdpc3RyeS5leGFtcGxlLmNvbSI6eyJ1c2VybmFtZSI6InVzZXIiLCJwYXNzd29yZCI6InBhc3MiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJhdXRoIjoiZFhObGNqcHdZWE56In19fQ==
+
+---
+# Pod Using ConfigMap as Environment Variables
+apiVersion: v1
+kind: Pod
+metadata:
+  name: configmap-env-pod
+spec:
+  containers:
+  - name: app
+    image: busybox:1.35
+    command: ['sh', '-c', 'env | grep -E "(DATABASE|LOG|DEBUG)" && sleep 3600']
+    env:
+    # Individual environment variables from ConfigMap
+    - name: DATABASE_URL
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: database_url
+    - name: LOG_LEVEL
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: log_level
+    # All keys from ConfigMap as environment variables
+    envFrom:
+    - configMapRef:
+        name: app-config
+    # Add prefix to environment variables
+    - prefix: CONFIG_
+      configMapRef:
+        name: app-config
+
+---
+# Pod Using Secret as Environment Variables
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-env-pod
+spec:
+  containers:
+  - name: app
+    image: busybox:1.35
+    command: ['sh', '-c', 'echo "Username: $USERNAME" && echo "API Key: $API_KEY" && sleep 3600']
+    env:
+    - name: USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: app-secret
+          key: username
+    - name: PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: app-secret
+          key: password
+    - name: API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: app-secret
+          key: api-key
+    envFrom:
+    - prefix: SECRET_
+      secretRef:
+        name: app-secret
+
+---
+# Pod Using ConfigMap and Secret as Volumes
+apiVersion: v1
+kind: Pod
+metadata:
+  name: config-volume-pod
+spec:
+  containers:
+  - name: app
+    image: nginx:1.21
+    volumeMounts:
+    # Mount entire ConfigMap
+    - name: config-volume
+      mountPath: /etc/config
+    # Mount specific ConfigMap key
+    - name: nginx-config
+      mountPath: /etc/nginx/conf.d
+    # Mount Secret
+    - name: secret-volume
+      mountPath: /etc/secrets
+      readOnly: true
+    # Mount TLS certificates
+    - name: tls-volume
+      mountPath: /etc/tls
+      readOnly: true
+  volumes:
+  - name: config-volume
+    configMap:
+      name: app-config
+  - name: nginx-config
+    configMap:
+      name: app-config
+      items:
+      - key: nginx.conf
+        path: default.conf
+  - name: secret-volume
+    secret:
+      secretName: app-secret
+      defaultMode: 0400
+  - name: tls-volume
+    secret:
+      secretName: tls-secret
+
+---
+# Pod with Comprehensive Security Context
+apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-pod
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    runAsNonRoot: true
+    fsGroup: 2000
+    fsGroupChangePolicy: "OnRootMismatch"
+    seccompProfile:
+      type: RuntimeDefault
+    supplementalGroups: [4000, 5000]
+  containers:
+  - name: app
+    image: busybox:1.35
+    command: ['sh', '-c', 'id && ls -la /data && sleep 3600']
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      runAsUser: 2000
+      runAsGroup: 2000
+      capabilities:
+        drop: ["ALL"]
+        add: ["NET_BIND_SERVICE"]
+    volumeMounts:
+    - name: data-volume
+      mountPath: /data
+    - name: tmp-volume
+      mountPath: /tmp
+  volumes:
+  - name: data-volume
+    emptyDir: {}
+  - name: tmp-volume
+    emptyDir: {}
+
+---
+# Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: app-service-account
+  namespace: default
+automountServiceAccountToken: true
+imagePullSecrets:
+- name: registry-secret
+
+---
+# Pod Using Custom Service Account
+apiVersion: v1
+kind: Pod
+metadata:
+  name: serviceaccount-pod
+spec:
+  serviceAccountName: app-service-account
+  containers:
+  - name: app
+    image: busybox:1.35
+    command: ['sh', '-c', 'ls -la /var/run/secrets/kubernetes.io/serviceaccount/ && sleep 3600']
+
+---
+# Role for RBAC
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create"]
+
+---
+# RoleBinding for RBAC
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: app-service-account
+  namespace: default
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ClusterRole for Cross-Namespace Access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-reader
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["nodes", "pods"]
+  verbs: ["get", "list"]
+
+---
+# ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: read-nodes
+subjects:
+- kind: ServiceAccount
+  name: app-service-account
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: node-reader
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Network Policy - Default Deny All
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: production
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+
+---
+# Network Policy - Allow Specific Traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: web-app-netpol
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: web-app
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow from frontend pods
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend
+    ports:
+    - protocol: TCP
+      port: 8080
+  # Allow from monitoring namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 9090
+  egress:
+  # Allow to database
+  - to:
+    - podSelector:
+        matchLabels:
+          app: database
+    ports:
+    - protocol: TCP
+      port: 5432
+  # Allow DNS
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+
+---
+# Resource Quota
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: production-quota
+  namespace: production
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "10"
+    requests.memory: 20Gi
+    limits.cpu: "20"
+    limits.memory: 40Gi
+
+    # Storage resources
+    requests.storage: 100Gi
+    persistentvolumeclaims: "10"
+
+    # Object counts
+    pods: "50"
+    services: "20"
+    secrets: "30"
+    configmaps: "40"
+    deployments.apps: "20"
+    jobs.batch: "10"
+
+---
+# Limit Range
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: production-limits
+  namespace: production
+spec:
+  limits:
+  # Container limits
+  - type: Container
+    default:
+      cpu: "200m"
+      memory: "256Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"
+    max:
+      cpu: "2"
+      memory: "2Gi"
+    min:
+      cpu: "50m"
+      memory: "64Mi"
+  # Pod limits
+  - type: Pod
+    max:
+      cpu: "4"
+      memory: "4Gi"
+  # PVC limits
+  - type: PersistentVolumeClaim
+    max:
+      storage: "10Gi"
+    min:
+      storage: "1Gi"
+
+---
+# Pod with Field References
+apiVersion: v1
+kind: Pod
+metadata:
+  name: field-ref-pod
+spec:
+  containers:
+  - name: app
+    image: busybox:1.35
+    command: ['sh', '-c', 'echo "Pod: $POD_NAME on Node: $NODE_NAME with IP: $POD_IP" && sleep 3600']
+    env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: SERVICE_ACCOUNT
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.serviceAccountName
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+---
+# Pod with Resource Field References
+apiVersion: v1
+kind: Pod
+metadata:
+  name: resource-ref-pod
+spec:
+  containers:
+  - name: app
+    image: busybox:1.35
+    command: ['sh', '-c', 'echo "CPU Request: $CPU_REQUEST, Memory Limit: $MEMORY_LIMIT" && sleep 3600']
+    env:
+    - name: CPU_REQUEST
+      valueFrom:
+        resourceFieldRef:
+          containerName: app
+          resource: requests.cpu
+    - name: CPU_LIMIT
+      valueFrom:
+        resourceFieldRef:
+          containerName: app
+          resource: limits.cpu
+    - name: MEMORY_REQUEST
+      valueFrom:
+        resourceFieldRef:
+          containerName: app
+          resource: requests.memory
+    - name: MEMORY_LIMIT
+      valueFrom:
+        resourceFieldRef:
+          containerName: app
+          resource: limits.memory
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+---
+# Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-storage-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+
+---
+# Pod with Persistent Volume
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pvc-pod
+spec:
+  containers:
+  - name: app
+    image: nginx:1.21
+    volumeMounts:
+    - name: app-storage
+      mountPath: /usr/share/nginx/html
+    - name: cache
+      mountPath: /var/cache/nginx
+    - name: config
+      mountPath: /etc/nginx/conf.d
+  volumes:
+  - name: app-storage
+    persistentVolumeClaim:
+      claimName: app-storage-claim
+  - name: cache
+    emptyDir:
+      sizeLimit: 1Gi
+  - name: config
+    configMap:
+      name: app-config
+      items:
+      - key: nginx.conf
+        path: default.conf
+
+---
+# Deployment with Security and Configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secure-app
+  namespace: production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: secure-app
+  template:
+    metadata:
+      labels:
+        app: secure-app
+    spec:
+      serviceAccountName: app-service-account
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 2000
+      containers:
+      - name: app
+        image: nginx:1.21
+        ports:
+        - containerPort: 8080
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+            add: ["NET_BIND_SERVICE"]
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: database_url
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: database-password
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+        - name: secrets
+          mountPath: /etc/secrets
+          readOnly: true
+        - name: cache
+          mountPath: /var/cache
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: config
+        configMap:
+          name: app-config
+      - name: secrets
+        secret:
+          secretName: app-secret
+      - name: cache
+        emptyDir: {}
+      - name: tmp
+        emptyDir: {}
+
+---
+# Immutable ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config-v2
+immutable: true
+data:
+  version: "2.0.0"
+  config.yaml: |
+    app:
+      name: "MyApp"
+      version: "2.0.0"
+    database:
+      host: "new-db.example.com"
+      port: 5432
+
+---
+# Init Container with Security
+apiVersion: v1
+kind: Pod
+metadata:
+  name: init-security-pod
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 2000
+  initContainers:
+  - name: init-setup
+    image: busybox:1.35
+    command: ['sh', '-c', 'echo "Initializing..." && mkdir -p /shared/data && echo "Setup complete" > /shared/data/init.txt']
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: ["ALL"]
+    volumeMounts:
+    - name: shared-data
+      mountPath: /shared
+    - name: tmp
+      mountPath: /tmp
+  containers:
+  - name: app
+    image: nginx:1.21
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: ["ALL"]
+        add: ["NET_BIND_SERVICE"]
+    volumeMounts:
+    - name: shared-data
+      mountPath: /shared
+    - name: cache
+      mountPath: /var/cache/nginx
+    - name: run
+      mountPath: /var/run
+  volumes:
+  - name: shared-data
+    emptyDir: {}
+  - name: cache
+    emptyDir: {}
+  - name: run
+    emptyDir: {}
+  - name: tmp
+    emptyDir: {}

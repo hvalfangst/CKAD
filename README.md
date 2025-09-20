@@ -1,255 +1,221 @@
-# CKAD (Certified Kubernetes Application Developer) Study Guide
+# Certified Kubernetes Application Developer (CKAD) Study Guide
 
-A comprehensive study guide and practice environment for passing the CKAD exam using local Docker Desktop and command-line tools.
+A comprehensive study guide and practical resource for the Certified Kubernetes Application Developer (CKAD) exam. This repository contains complete documentation, examples, and practice exercises for all CKAD curriculum sections.
 
-## 📋 What's Included
+## 📚 Curriculum Overview
 
-This repository provides everything you need to prepare for and pass the CKAD exam:
+The CKAD exam covers 5 main domains with the following weightings:
 
-- **Realistic Practice Exam** - 5 comprehensive questions mirroring real exam scenarios
-- **Modular Tips Guide** - Organized reference materials for quick lookup
-- **Hands-on Environment** - Designed for local Docker Desktop practice
-- **Time Management Strategy** - Proven approaches for exam success
+| Section | Domain | Weight | Description |
+|---------|--------|--------|-------------|
+| 1 | [Application Design and Build](./ckad-curriculum/1-application-design-build/) | 20% | Pods, Deployments, Jobs, Multi-container patterns |
+| 2 | [Application Deployment](./ckad-curriculum/2-application-deployment/) | 20% | Deployment strategies, Scaling, Rolling updates |
+| 3 | [Application Observability and Maintenance](./ckad-curriculum/3-application-observability-maintenance/) | 15% | Monitoring, Logging, Debugging, Health checks |
+| 4 | [Application Environment, Configuration and Security](./ckad-curriculum/4-application-environment-config-security/) | 25% | ConfigMaps, Secrets, RBAC, Security contexts |
+| 5 | [Services and Networking](./ckad-curriculum/5-services-networking/) | 20% | Services, Ingress, Network policies, DNS |
 
-## 🚀 Quick Start
+## 🎯 What's Included
+
+Each curriculum section contains:
+
+### 📖 README.md
+- **Comprehensive theory and concepts**
+- **Official Kubernetes documentation references**
+- **Best practices and patterns**
+- **Quick reference commands**
+- **Exam tips and common scenarios**
+
+### 💻 examples.yaml
+- **20+ practical YAML configurations per section**
+- **Real-world examples you can apply immediately**
+- **Progressive complexity from basic to advanced**
+- **Production-ready configurations**
+- **Common patterns and use cases**
+
+### 🏋️ practice-exercises.md
+- **10+ hands-on exercises per section**
+- **Progressive difficulty levels**
+- **Exam simulation scenarios with time limits**
+- **Troubleshooting challenges**
+- **Solutions and explanations**
+- **Command references and debugging workflows**
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Docker Desktop installed and running
-- kubectl configured for local cluster
-- vim text editor
 - Basic Kubernetes knowledge
+- Access to a Kubernetes cluster (local or cloud)
+- kubectl installed and configured
 
-### Setup Your Environment
-```bash
-# 1. Clone or download this repository
-git clone <repository-url>
-cd CKAD
+### Study Approach
 
-# 2. Quick environment setup (30 seconds)
-alias k='kubectl' && alias kdr='kubectl create --dry-run=client -o yaml' && alias kg='kubectl get' && alias kd='kubectl describe' && alias ka='kubectl apply -f' && export KUBE_EDITOR=vim
+1. **Read the theory** in each section's README.md
+2. **Practice with examples** from examples.yaml files
+3. **Complete exercises** in practice-exercises.md
+4. **Time yourself** on exam simulation scenarios
+5. **Review and repeat** challenging areas
 
-# 3. Configure vim for YAML
-echo -e "set tabstop=2\nset shiftwidth=2\nset expandtab\nset number\nsyntax on" >> ~/.vimrc
+### Recommended Study Order
 
-# 4. Verify your setup
-k get nodes
-k version --client
+```
+Section 1: Application Design and Build
+   ↓
+Section 4: Application Environment, Configuration and Security
+   ↓
+Section 2: Application Deployment
+   ↓
+Section 5: Services and Networking
+   ↓
+Section 3: Application Observability and Maintenance
 ```
 
-## 📚 Study Materials
+## 📋 Quick Navigation
 
-### 🎯 [Practice Exam](ckad-practice-exam.md)
-**Start here for hands-on practice!**
+### Section 1: Application Design and Build (20%)
+- **[📖 Theory Guide](./ckad-curriculum/1-application-design-build/README.md)** - Pods, Deployments, Jobs, Multi-container patterns
+- **[💻 Examples](./ckad-curriculum/1-application-design-build/examples.yaml)** - 25+ YAML configurations
+- **[🏋️ Exercises](./ckad-curriculum/1-application-design-build/practice-exercises.md)** - 9 exercise sets + exam scenarios
 
-Five comprehensive questions (100 points total) covering all CKAD exam topics:
-1. **Multi-Container Pod with Shared Volume** (20 points)
-2. **ConfigMap and Secret Integration** (15 points)
-3. **Resource Management and HPA** (20 points)
-4. **Persistent Volume and StatefulSet** (25 points)
-5. **Network Policies and Service Mesh** (20 points)
+### Section 2: Application Deployment (20%)
+- **[📖 Theory Guide](./ckad-curriculum/2-application-deployment/README.md)** - Deployment strategies, Scaling, HPA
+- **[💻 Examples](./ckad-curriculum/2-application-deployment/examples.yaml)** - Rolling updates, Blue-green, Canary deployments
+- **[🏋️ Exercises](./ckad-curriculum/2-application-deployment/practice-exercises.md)** - 10 exercise sets + performance scenarios
 
-**Time Limit**: 2 hours | **Passing Score**: 66%
+### Section 3: Application Observability and Maintenance (15%)
+- **[📖 Theory Guide](./ckad-curriculum/3-application-observability-maintenance/README.md)** - Monitoring, Logging, Debugging
+- **[💻 Examples](./ckad-curriculum/3-application-observability-maintenance/examples.yaml)** - Health checks, Logging patterns
+- **[🏋️ Exercises](./ckad-curriculum/3-application-observability-maintenance/practice-exercises.md)** - Troubleshooting workflows
 
-### 📖 [Exam Tips Guide](ckad-exam-tips.md)
-**Your quick reference during exam prep and the actual exam**
+### Section 4: Application Environment, Configuration and Security (25%)
+- **[📖 Theory Guide](./ckad-curriculum/4-application-environment-config-security/README.md)** - ConfigMaps, Secrets, RBAC
+- **[💻 Examples](./ckad-curriculum/4-application-environment-config-security/examples.yaml)** - Security contexts, Network policies
+- **[🏋️ Exercises](./ckad-curriculum/4-application-environment-config-security/practice-exercises.md)** - Configuration and security scenarios
 
-Modular guide with specialized sections:
-- **Setup & Aliases** - Environment configuration
-- **Vim Configuration** - Efficient YAML editing
-- **Kubectl Commands** - Essential command reference
-- **Debugging Guide** - Systematic troubleshooting
-- **YAML Templates** - Ready-to-use resource templates
-- **Exam Strategy** - Time management and scoring tips
+### Section 5: Services and Networking (20%)
+- **[📖 Theory Guide](./ckad-curriculum/5-services-networking/README.md)** - Services, Ingress, Network policies
+- **[💻 Examples](./ckad-curriculum/5-services-networking/examples.yaml)** - All service types, Ingress configurations
+- **[🏋️ Exercises](./ckad-curriculum/5-services-networking/practice-exercises.md)** - Network troubleshooting scenarios
 
-## 🎯 How to Use This Guide
+## 🛠️ Essential kubectl Commands
 
-### Phase 1: Initial Assessment (30 minutes)
-1. Take the practice exam without references
-2. Note areas where you struggle
-3. Check your score against the 66% passing threshold
-
-### Phase 2: Study & Practice (2-4 weeks)
-1. **Study the tips modules** systematically:
-   - Start with [Setup & Aliases](tips/setup/aliases.md)
-   - Master [Kubectl Commands](tips/kubectl/commands.md)
-   - Practice [YAML Templates](tips/yaml/templates.md)
-   - Learn [Debugging Workflow](tips/debugging/troubleshooting.md)
-
-2. **Practice daily** with these exercises:
-   - Create different resource types from memory
-   - Practice troubleshooting broken deployments
-   - Time yourself on common tasks
-   - Use only kubectl and vim (no GUI tools)
-
-3. **Retake practice exam** weekly to track progress
-
-### Phase 3: Exam Preparation (1 week before)
-1. **Memorize essential aliases** and shortcuts
-2. **Practice time management** - complete practice exam in 90 minutes
-3. **Review debugging workflows** until they're automatic
-4. **Simulate exam conditions** - no external references
-
-### Phase 4: Exam Day
-1. **Use the 30-second setup** from the tips guide
-2. **Follow the exam strategy** for question prioritization
-3. **Keep the tips guide open** for quick reference
-4. **Stay calm and manage time** effectively
-
-## 📊 Practice Schedule
-
-### Week 1-2: Foundation Building
-- **Monday**: Multi-container pods and volumes
-- **Tuesday**: Deployments and services
-- **Wednesday**: ConfigMaps and secrets
-- **Thursday**: Resource management and scaling
-- **Friday**: Debugging and troubleshooting
-- **Weekend**: Full practice exam attempt
-
-### Week 3-4: Advanced Topics
-- **Monday**: Persistent volumes and StatefulSets
-- **Tuesday**: Jobs and CronJobs
-- **Wednesday**: Network policies and security
-- **Thursday**: RBAC and service accounts
-- **Friday**: Performance optimization
-- **Weekend**: Timed practice exam (aim for <90 minutes)
-
-## 🎯 Key Success Factors
-
-### Essential Skills to Master
-1. **kubectl dry-run** - Generate YAML templates quickly
-2. **vim efficiency** - Edit YAML files fast and accurately
-3. **Debugging workflow** - Systematically troubleshoot issues
-4. **Time management** - Allocate time based on question points
-5. **Label selectors** - Understand pod/service relationships
-
-### Most Important Commands
+### Quick Resource Creation
 ```bash
-# Template generation (saves 80% of time)
-kubectl create <resource> --dry-run=client -o yaml
+# Pods
+kubectl run nginx --image=nginx:1.21 --dry-run=client -o yaml > pod.yaml
 
-# Debugging (solves 90% of issues)
-kubectl describe <resource> <name>
-kubectl logs <pod-name>
-kubectl get events
+# Deployments
+kubectl create deployment nginx --image=nginx:1.21 --replicas=3 --dry-run=client -o yaml > deployment.yaml
 
-# Quick testing
-kubectl run test --image=busybox --rm -it -- /bin/sh
+# Services
+kubectl expose deployment nginx --port=80 --target-port=80 --dry-run=client -o yaml > service.yaml
+
+# ConfigMaps
+kubectl create configmap app-config --from-literal=key=value --dry-run=client -o yaml > configmap.yaml
+
+# Secrets
+kubectl create secret generic app-secret --from-literal=password=secret --dry-run=client -o yaml > secret.yaml
 ```
 
-### Common Mistakes to Avoid
-- Spending too long on difficult questions
-- Not reading questions carefully (especially namespace requirements)
-- Forgetting to verify solutions work
-- Not using dry-run to generate templates
-- Poor time management
-
-## 📈 Scoring Strategy
-
-### High-Priority Topics (60% of exam points)
-- Pods and multi-container patterns
-- Deployments and services
-- ConfigMaps and secrets
-- Basic troubleshooting
-- Resource limits and requests
-
-### Medium-Priority Topics (30% of exam points)
-- Jobs and CronJobs
-- Persistent volumes
-- Network policies
-- Service accounts and RBAC
-
-### Lower-Priority Topics (10% of exam points)
-- Advanced networking
-- Custom resources
-- Monitoring configurations
-
-## 🛠️ Troubleshooting Common Issues
-
-### Docker Desktop Problems
+### Debugging and Troubleshooting
 ```bash
-# Reset Kubernetes cluster
-# Docker Desktop > Settings > Kubernetes > Reset Kubernetes Cluster
+# Pod investigation
+kubectl describe pod <pod-name>
+kubectl logs <pod-name> -f
+kubectl exec -it <pod-name> -- /bin/bash
 
-# Verify cluster is running
-kubectl cluster-info
-kubectl get nodes
+# Service connectivity
+kubectl get endpoints
+kubectl run test --image=busybox:1.35 -it --rm -- sh
+
+# Resource monitoring
+kubectl top pods
+kubectl top nodes
+kubectl get events --sort-by=.metadata.creationTimestamp
 ```
 
-### Permission Issues
-```bash
-# Check current context
-kubectl config current-context
+## 📝 Exam Tips
 
-# Verify permissions
-kubectl auth can-i create pods
-kubectl auth can-i create deployments
-```
+### Time Management
+- **2 hours for 15-20 questions**
+- **6-8 minutes average per question**
+- **Practice with time limits**
+- **Use kubectl shortcuts and aliases**
 
-### Practice Exam Issues
-```bash
-# Clean up between attempts
-kubectl delete all --all
-kubectl delete pvc --all
-kubectl delete configmaps --all
-kubectl delete secrets --all --ignore-not-found=true
-```
+### Essential Skills
+- **Fast YAML generation with --dry-run=client -o yaml**
+- **Imperative commands for quick resource creation**
+- **Systematic debugging workflows**
+- **kubectl explain for field references**
+- **vim/nano efficiency for YAML editing**
 
-## 📚 Additional Resources
+### Common Exam Scenarios
+- Create and configure pods with specific requirements
+- Set up deployments with rolling update strategies
+- Configure ConfigMaps and Secrets with proper security
+- Implement network policies and service configurations
+- Debug failing applications and services
+- Set up monitoring and health checks
+
+## 🎓 CKAD Certification Details
+
+### Exam Format
+- **Performance-based exam** (hands-on lab environment)
+- **2 hours duration**
+- **15-20 practical questions**
+- **66% passing score**
+- **Valid for 3 years**
+
+### Exam Environment
+- **Pre-configured Kubernetes clusters**
+- **kubectl and related tools available**
+- **Web-based terminal**
+- **Copy/paste enabled**
+- **Kubernetes documentation accessible**
+
+### Registration and Scheduling
+- **Register at** [training.linuxfoundation.org](https://training.linuxfoundation.org)
+- **Schedule through PSI Services**
+- **Online proctored exam**
+- **One free retake included**
+
+## 🔗 Additional Resources
 
 ### Official Documentation
-- [Kubernetes.io Documentation](https://kubernetes.io/docs/)
-- [CKAD Exam Guidelines](https://www.cncf.io/certification/ckad/)
-- [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
+- [Kubernetes Documentation](https://kubernetes.io/docs/)
+- [CKAD Exam Details](https://www.cncf.io/certification/ckad/)
+- [Candidate Handbook](https://docs.linuxfoundation.org/tc-docs/certification/lf-handbook2)
 
-### Practice Platforms
-- [Killer.sh CKAD Simulator](https://killer.sh/ckad)
-- [KodeKloud CKAD Course](https://kodekloud.com/courses/certified-kubernetes-application-developer-ckad/)
+### Practice Environments
+- [Killer.sh](https://killer.sh) - CKAD exam simulator
+- [Play with Kubernetes](https://labs.play-with-k8s.com/)
+- Local clusters: minikube, kind, k3s
 
-## ✅ Pre-Exam Checklist
+### Community Resources
+- [Kubernetes Slack](https://kubernetes.slack.com)
+- [CNCF Community](https://community.cncf.io/)
+- [r/kubernetes](https://reddit.com/r/kubernetes)
 
-### Technical Preparation
-- [ ] Can complete practice exam in under 90 minutes
-- [ ] Score consistently above 75% on practice attempts
-- [ ] Memorized essential kubectl aliases
-- [ ] Comfortable with vim YAML editing
-- [ ] Know debugging workflow by heart
+## 🤝 Contributing
 
-### Exam Day Preparation
-- [ ] Environment setup commands ready
-- [ ] Tips guide bookmarked for quick reference
-- [ ] Time management strategy planned
-- [ ] Backup plan for difficult questions
-- [ ] Calm and confident mindset
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Add your improvements
+4. Submit a pull request
 
-## 🏆 Success Stories
+## 📄 License
 
-**"This guide helped me pass CKAD on first attempt with 89%!"**
-*- Focus on the practice exam and time management tips*
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-**"The modular tips structure saved me during the real exam"**
-*- Having quick access to debugging workflows was crucial*
+## ⭐ Acknowledgments
 
-**"Practicing with only kubectl and vim made the exam feel easy"**
-*- Real exam environment preparation pays off*
-
-## 📞 Support & Feedback
-
-Found an issue or have suggestions for improvement?
-- Open an issue in the repository
-- Contribute improvements via pull request
-- Share your success story to help others
+- Based on official Kubernetes documentation
+- Inspired by the CNCF CKAD curriculum
+- Community feedback and contributions
+- Real-world Kubernetes experience and best practices
 
 ---
-
-## 🎯 Quick Navigation
-
-- **Start Practicing**: [Practice Exam](ckad-practice-exam.md)
-- **Quick Reference**: [Exam Tips](ckad-exam-tips.md)
-- **Emergency Debug**: [Troubleshooting Guide](tips/debugging/troubleshooting.md)
-- **Fast Setup**: [Setup & Aliases](tips/setup/aliases.md)
-- **YAML Help**: [Templates](tips/yaml/templates.md)
 
 **Good luck with your CKAD certification journey! 🚀**
 
----
-*Remember: The CKAD exam tests practical skills, not theoretical knowledge. Focus on hands-on practice and you'll succeed!*
+*Remember: Practice consistently, time yourself, and focus on hands-on experience. The CKAD exam tests practical skills, so the more you practice with real Kubernetes clusters, the better prepared you'll be.*
