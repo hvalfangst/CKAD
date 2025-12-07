@@ -1,0 +1,392 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+/* Wiki container */
+.wiki-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    padding: 40px;
+}
+
+/* Header styles */
+.wiki-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 3px solid #326ce5;
+}
+
+.wiki-header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #326ce5, #1a4f9e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Search container */
+.search-container {
+    margin-bottom: 30px;
+}
+
+.search-bar {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto 15px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 18px 50px 18px 24px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.search-input:focus {
+    border-color: #326ce5;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(50, 108, 229, 0.1);
+}
+
+.clear-button {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #dc3545;
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clear-button:hover {
+    background: #c82333;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.clear-button.hidden {
+    display: none;
+}
+
+.search-info {
+    text-align: center;
+    color: #666;
+    font-size: 1rem;
+}
+
+/* Category filter */
+.category-filter {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 30px;
+    border: 1px solid #e9ecef;
+}
+
+.category-filter h3 {
+    color: #326ce5;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.category-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.category-button {
+    background: white;
+    color: #495057;
+    border: 2px solid #e9ecef;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.category-button:hover {
+    background: #e9ecef;
+    border-color: #326ce5;
+    transform: translateY(-2px);
+}
+
+.category-button.active {
+    background: linear-gradient(135deg, #326ce5, #1a4f9e);
+    color: white;
+    border-color: #326ce5;
+}
+
+.reset-button {
+    display: block;
+    margin: 0 auto;
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.reset-button:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
+/* Concepts container */
+.concepts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.category-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 30px;
+    border-left: 5px solid #326ce5;
+}
+
+.category-title {
+    color: #326ce5;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.concepts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 20px;
+}
+
+/* Concept card */
+.concept-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.concept-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.concept-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    gap: 15px;
+}
+
+.concept-title {
+    color: #2c5364;
+    font-size: 1.2rem;
+    font-weight: 600;
+    flex: 1;
+}
+
+.copy-button {
+    background: #326ce5;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.copy-button:hover {
+    background: #1a4f9e;
+    transform: scale(1.05);
+}
+
+.copy-button.copied {
+    background: #28a745;
+}
+
+.concept-description {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+    font-style: italic;
+    padding: 10px;
+    background: #e7f3ff;
+    border-radius: 6px;
+    border-left: 3px solid #326ce5;
+}
+
+.command-block {
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    border: 1px solid #1a1a1a;
+}
+
+.command-block code {
+    color: #f8f8f2;
+    font-family: inherit;
+}
+
+/* No results */
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.no-results p {
+    font-size: 1.3rem;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+    .concepts-grid {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .wiki-container {
+        margin: 10px;
+        padding: 25px;
+    }
+
+    .wiki-header h1 {
+        font-size: 2.2rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .concepts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .concept-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .copy-button {
+        width: 100%;
+    }
+
+    .category-buttons {
+        gap: 8px;
+    }
+
+    .category-button {
+        font-size: 0.85rem;
+        padding: 8px 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .wiki-container {
+        padding: 15px;
+    }
+
+    .wiki-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .search-input {
+        font-size: 1rem;
+        padding: 14px 45px 14px 18px;
+    }
+
+    .category-section {
+        padding: 20px;
+    }
+
+    .category-title {
+        font-size: 1.5rem;
+    }
+
+    .command-block {
+        font-size: 0.8rem;
+        padding: 12px;
+    }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #326ce5;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #1a4f9e;
+}
