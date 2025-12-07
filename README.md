@@ -2,6 +2,7 @@
 
 An interactive web-based wiki for Certified Kubernetes Application Developer (CKAD) exam preparation, built with Rust, Leptos, and WebAssembly.
 
+[Deployed to GH Pages here](https://hvalfangst.github.io/CKAD/)
 
 ## Prerequisites
 
